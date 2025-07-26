@@ -3,6 +3,11 @@ import { assign, fromCallback, fromPromise } from 'xstate';
 import MediaRecorderStream from './MediaRecorderStream.mjs';
 
 
+var Promise_try = Promise.try ?? function try_(func, ...arg) {
+	return new Promise((resolve) => func(...arg));
+};
+
+
 export function getNextEvents(snapshot) {
 	return Array.from(new Set(snapshot._nodes.flatMap((sn) => sn.ownEvents)));
 }
@@ -75,7 +80,7 @@ export var mediaRecorderStream = resourceActor({
 export function resourceActor({ acquire, release }) {
 	return fromCallback(({ input, self, sendBack }) => {
 		var earlyAbort = new AbortController();
-		var resource_ = Promise.resolve(acquire(input, earlyAbort.signal));
+		var resource_ = Promise_try(acquire, input, earlyAbort.signal);
 		resource_.then(
 			(resource) => void sendBack({
 				type: "ready",
