@@ -1,6 +1,6 @@
 import { assign, createMachine, setup } from 'xstate';
 
-import { contextCall, fromActor, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream } from './xstate_helpers.mjs';
+import { byId, contextCall, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream } from './xstate_helpers.mjs';
 
 export default setup({
 	actions: {
@@ -13,7 +13,7 @@ export default setup({
 		saveFileStream,
 	},
 	guards: {
-		fromActor,
+		byId,
 	},
 }).createMachine({
 	id: "TapeRecorder",
@@ -84,7 +84,7 @@ export default setup({
 									on: {
 										ready: {
 											guard: {
-												type: "fromActor",
+												type: "byId",
 												params: "mic",
 											},
 											actions: assign({
@@ -105,7 +105,7 @@ export default setup({
 									on: {
 										ready: {
 											guard: {
-												type: "fromActor",
+												type: "byId",
 												params: "file",
 											},
 											actions: assign({

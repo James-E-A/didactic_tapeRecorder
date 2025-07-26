@@ -79,8 +79,8 @@ export function resourceActor({ acquire, release }) {
 		resource_.then(
 			(resource) => void sendBack({
 				type: "ready",
+				id: self.id,
 				output: resource,
-				_fixme_xstate_5335: self.id
 			}),
 			(error) => void sendBack({
 				type: "error",
@@ -96,8 +96,9 @@ export function resourceActor({ acquire, release }) {
 }
 
 
-export function fromActor({ event }, id) {
-	return event._fixme_xstate_5335 === id;
+export function byId({ event }, id) {
+	// WORKAROUND: https://github.com/statelyai/xstate/issues/5335
+	return event.id === id;
 }
 
 
