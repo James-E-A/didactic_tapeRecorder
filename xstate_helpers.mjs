@@ -3,7 +3,7 @@ import { assign, fromCallback, fromPromise } from 'xstate';
 import MediaRecorderStream from './MediaRecorderStream.mjs';
 
 
-var Promise_try = Promise.try ?? function try_(func, ...arg) {
+var Promise_try = Promise.try?.bind(Promise) ?? function try_(func, ...arg) {
 	return new Promise((resolve) => func(...arg));
 };
 

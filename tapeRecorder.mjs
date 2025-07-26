@@ -39,7 +39,7 @@ export default setup({
 			on: {
 				error: { // asynchronous error in invoked actor
 					actions: "console_error",
-					target: "#TapeRecorder.inactive", // FIXME: why doesn't this work when written as "..inactive"?
+					target: ".error",
 				},
 			},
 			invoke: [
@@ -51,9 +51,8 @@ export default setup({
 						options: context.recorderOptions,
 					}),
 					onError: { // synchronous error in invoked actor
-						// FIXME: how to send the invoking machine an error event for one D.R.Y. error-handling codepath?
 						actions: "console_error",
-						target: "#TapeRecorder.inactive", // FIXME: why doesn't this work when written as "..inactive"?
+						target: ".error",
 					},
 				},
 
@@ -62,9 +61,8 @@ export default setup({
 					src: "saveFileStream",
 					input: ({ context }) => context.fileOptions,
 					onError: { // synchronous error in invoked actor
-						// FIXME: how to send the invoking machine an error event for one D.R.Y. error-handling codepath?
 						actions: "console_error",
-						target: "#TapeRecorder.inactive", // FIXME: why doesn't this work when written as "..inactive"?
+						target: ".error",
 					},
 				},
 
@@ -133,9 +131,8 @@ export default setup({
 							}),
 							onDone: "done",
 							onError: { // synchronous error in invoked actor
-								// FIXME: how to send the invoking machine an error event for one D.R.Y. error-handling codepath?
 								actions: "console_error",
-								target: "#TapeRecorder.inactive",
+								target: "error",
 							},
 						},
 					],
@@ -172,6 +169,7 @@ export default setup({
 					},
 				},
 				done: { type: "final" },
+				error: { type: "final" },
 			},
 			onDone: "#TapeRecorder.inactive", // FIXME: why doesn't this work when written as "..inactive"?
 		},
