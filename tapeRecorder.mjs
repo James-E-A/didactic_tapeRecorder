@@ -146,7 +146,7 @@ export default setup({
 							src: "onBeforeUnloadLock",
 							onError: { // synchronous error in invoked actor
 								actions: "console_error",
-								target: ".error",
+								target: "error",
 							},
 						},
 
@@ -154,7 +154,7 @@ export default setup({
 							src: "wakeLock",
 							onError: { // synchronous error in invoked actor
 								actions: "console_error",
-								target: ".error",
+								target: "error",
 							},
 						},
 					]
