@@ -69,14 +69,6 @@ export default setup({
 						target: ".error",
 					},
 				},
-
-				{
-					src: "onBeforeUnloadLock",
-					onError: { // synchronous error in invoked actor
-						actions: "console_error",
-						target: ".error",
-					},
-				},
 			],
 
 			initial: "acquiring",
@@ -147,6 +139,14 @@ export default setup({
 							onError: { // synchronous error in invoked actor
 								actions: "console_error",
 								target: "error",
+							},
+						},
+
+						{
+							src: "onBeforeUnloadLock",
+							onError: { // synchronous error in invoked actor
+								actions: "console_error",
+								target: ".error",
 							},
 						},
 
