@@ -4,8 +4,8 @@ import { byId, contextCall, onBeforeUnloadLock, mediaRecorderStream, pipeTo, sav
 
 export default setup({
 	actors: {
-		onBeforeUnloadLock,
 		mediaRecorderStream,
+		onBeforeUnloadLock,
 		pipeTo,
 		saveFileStream,
 		wakeLock,
@@ -16,7 +16,9 @@ export default setup({
 	},
 }).createMachine({
 	id: "TapeRecorder",
+
 	initial: "inactive",
+
 	states: {
 		inactive: {
 			on: {
@@ -29,6 +31,7 @@ export default setup({
 								mimeType: event.input.mimeType,
 							},
 						}),
+
 						fileOptions: ({ event }) => ({
 							suggestedName: event.input.suggestedName,
 						}),
@@ -50,10 +53,7 @@ export default setup({
 				{
 					id: "mic",
 					src: "mediaRecorderStream",
-					input: ({ context }) => ({
-						query: { audio: true, video: false },
-						options: context.recorderOptions,
-					}),
+					input: ({ context }) => context.recorderOptions,
 					onError: { // synchronous error in invoked actor
 						actions: "console_error",
 						target: ".error",
