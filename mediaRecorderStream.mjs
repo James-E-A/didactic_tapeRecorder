@@ -1,4 +1,6 @@
 export default class MediaRecorderStream {
+	static #TIMESLICE_DEFAULT = 1000;
+
 	static async new(query, options) {
 		// stop tracks, because we own this mediaStream & it would be utterly uncollected otherwise
 		options = Object.assign({ _stopTracksAlso: true }, options);
@@ -31,7 +33,13 @@ export default class MediaRecorderStream {
 	}
 
 	start() {
-		this.#mediaRecorder.start(this.#options?.timeslice);
+		// undefined = "use the default timeslice"
+		// null = "don't use timeslice"
+
+		let timeslice = this.#options?.timeslice;
+		if (timeslice === undefined) timeslice = this.__proto__.constructor.#TIMESLICE_DEFAULT;
+		let timeslice_ = timeslice === null ? undefined : timeslice;
+		this.#mediaRecorder.start(timeslice_);
 		console.debug("START OK");
 	}
 

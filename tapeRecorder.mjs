@@ -29,6 +29,7 @@ export default setup({
 							options: {
 								mimeType: event.input.mimeType,
 								startImmediately: event.input.startImmediately ?? true,
+								timeslice: event.input.timeslice ?? undefined,
 							},
 						}),
 
