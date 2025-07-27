@@ -43,7 +43,8 @@ export default setup({
 
 		recording: {
 			on: {
-				error: { // asynchronous error in invoked actor
+				error: {
+					description: "asynchronous error in invoked actor",
 					actions: "console_error",
 					target: ".error",
 				},
@@ -54,7 +55,8 @@ export default setup({
 					id: "mic",
 					src: "mediaRecorderStream",
 					input: ({ context }) => context.recorderOptions,
-					onError: { // synchronous error in invoked actor
+					onError: {
+						description: "synchronous error in invoked actor",
 						actions: "console_error",
 						target: ".error",
 					},
@@ -64,7 +66,8 @@ export default setup({
 					id: "file",
 					src: "saveFileStream",
 					input: ({ context }) => context.fileOptions,
-					onError: { // synchronous error in invoked actor
+					onError: {
+						description: "synchronous error in invoked actor",
 						actions: "console_error",
 						target: ".error",
 					},
@@ -136,7 +139,8 @@ export default setup({
 								target: context.file
 							}),
 							onDone: "done",
-							onError: { // synchronous error in invoked actor
+							onError: {
+								description: "synchronous error in invoked actor",
 								actions: "console_error",
 								target: "error",
 							},
@@ -144,7 +148,8 @@ export default setup({
 
 						{
 							src: "onBeforeUnloadLock",
-							onError: { // synchronous error in invoked actor
+							onError: {
+								description: "synchronous error in invoked actor",
 								actions: "console_error",
 								target: "error",
 							},
@@ -152,7 +157,8 @@ export default setup({
 
 						{
 							src: "wakeLock",
-							onError: { // synchronous error in invoked actor
+							onError: {
+								description: "synchronous error in invoked actor",
 								actions: "console_error",
 								target: "error",
 							},
