@@ -199,7 +199,7 @@ export default setup({
 				error: { type: "final" },
 			},
 
-			onDone: "#TapeRecorder.inactive", // FIXME: why doesn't this work when written as "..inactive"?
+			onDone: "inactive",
 		},
 	},
 });
