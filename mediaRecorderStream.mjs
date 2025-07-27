@@ -107,12 +107,13 @@ export default class MediaRecorderStream {
 			);
 			this.#mediaRecorder.addEventListener(
 				'error',
-				({ error }) => void controller.error(error),
+				({ error }) => {try {controller.error(error)} finally {this.#abortController.abort(null)}},
 				{ signal: this.#abortController.signal }
 			);
 			this.#mediaRecorder.addEventListener(
 				'stop',
-				() => {try {controller.close();} finally {this.#abortController.abort(null);}}
+				() => {try {controller.close();} finally {this.#abortController.abort(null);}},
+				{ signal: this.#abortController.signal }
 			);
 		}
 
