@@ -33,9 +33,17 @@ var actor = window.temp0 = createActor(tapeRecorder);
 	controls.appendChild(stop);
 
 	let mimeType = document.createElement('select');
+	mimeType.hidden = true;
+	mimeType.name = 'mimeType';
 	mimeType.add(new Option('audio/webm;codecs=opus'));
 	mimeType.dataset.allowedInStates = "inactive";
 	form.appendChild(mimeType);
+
+	let suggestedName = document.createElement('input');
+	suggestedName.type = 'hidden';
+	suggestedName.name = 'suggestedName';
+	suggestedName.value = 'out.weba';
+	form.appendChild(suggestedName);
 
 	document.body.appendChild(form);
 	record.focus();
