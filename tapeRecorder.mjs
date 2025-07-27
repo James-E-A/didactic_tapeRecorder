@@ -163,7 +163,7 @@ export default setup({
 								target: "error",
 							},
 						},
-					]
+					],
 
 					entry: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
 
