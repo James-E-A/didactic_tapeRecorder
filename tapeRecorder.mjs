@@ -77,14 +77,6 @@ export default setup({
 						target: ".error",
 					},
 				},
-
-				{
-					src: "wakeLock",
-					onError: { // synchronous error in invoked actor
-						actions: "console_error",
-						target: ".error",
-					},
-				},
 			],
 
 			initial: "acquiring",
@@ -143,19 +135,29 @@ export default setup({
 				recording: {
 					initial: "recording",
 
-					invoke: {
-						id: "saving",
-						src: "pipeTo",
-						input: ({ context }) => ({
-							source: context.mic,
-							target: context.file
-						}),
-						onDone: "done",
-						onError: { // synchronous error in invoked actor
-							actions: "console_error",
-							target: "error",
+					invoke: [
+						{
+							id: "saving",
+							src: "pipeTo",
+							input: ({ context }) => ({
+								source: context.mic,
+								target: context.file
+							}),
+							onDone: "done",
+							onError: { // synchronous error in invoked actor
+								actions: "console_error",
+								target: "error",
+							},
 						},
-					},
+
+						{
+							src: "wakeLock",
+							onError: { // synchronous error in invoked actor
+								actions: "console_error",
+								target: ".error",
+							},
+						},
+					]
 
 					entry: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
 
