@@ -39,13 +39,20 @@ export var onBeforeUnloadLock = resourceActor({
 
 
 export var saveFileStream = resourceActor({
-	acquire: (options, earlyAbortSignal) =>
-		window.showSaveFilePicker(options)
-		.then((handle) =>
-			!earlyAbortSignal.aborted
-			? handle.createWritable()
-			: Promise.reject(earlyAbortSignal.reason)
-		),
+	acquire: async (options, cancelSignal) => {
+		let handle = await window.showSaveFilePicker(options);
+		cancelSignal.throwIfAborted();
+
+		let writable = await handle.createWritable();
+		try {
+			cancelSignal.throwIfAborted();
+		} catch (error) {
+			await writable.abort(error);
+			throw error;
+		}
+
+		return writable;
+	},
 
 	release: async (writable) => {
 		if (!writable.locked) {
@@ -58,9 +65,9 @@ export var saveFileStream = resourceActor({
 				else
 					throw error;
 			}
-			console.log("disposed before writable was closed: %o", writable);
+			console.warn("disposed before writable was closed: %o", writable);
 		} else {
-			console.warning("disposed while writable was locked: %o", writable);
+			console.warn("disposed while writable was locked: %o", writable);
 			await new Promise((resolve) => void setTimeout(resolve, 1000));
 			writable.abort("actor disposed");
 		}
@@ -80,8 +87,8 @@ export var mediaRecorderStream = resourceActor({
 
 
 export var wakeLock = resourceActor({
-	acquire: async (options, earlyAbortSignal) =>
-		await WakeLockEx.acquire(options, earlyAbortSignal),
+	acquire: async (options, cancelSignal) =>
+		await WakeLockEx.acquire(options, cancelSignal),
 
 	release: (lock) =>
 		lock.release(),
@@ -90,22 +97,26 @@ export var wakeLock = resourceActor({
 
 export function resourceActor({ acquire, release }) {
 	return fromCallback(({ input, self, sendBack }) => {
-		var earlyAbort = new AbortController();
-		var resource_ = Promise_try(acquire, input, earlyAbort.signal);
+		var cancelController = new AbortController();
+		var resource_ = Promise_try(acquire, input, cancelController.signal);
+
 		resource_.then(
 			(resource) => void sendBack({
 				type: "ready",
 				id: self.id,
 				output: resource,
 			}),
-			(error) => void sendBack({
-				type: "error",
-				error,
-			})
+			(error) => {
+				cancelController.abort(error);
+				sendBack({
+					type: "error",
+					error,
+				});
+			}
 		);
-		resource_.finally(() => void earlyAbort.abort(null));
+
 		return () => {
-			earlyAbort.abort();
+			cancelController.abort(null);
 			resource_.then((resource) => release(resource));
 		};
 	});
@@ -115,9 +126,4 @@ export function resourceActor({ acquire, release }) {
 export function byId({ event }, id) {
 	// WORKAROUND: https://github.com/statelyai/xstate/issues/5335
 	return event.id === id;
-}
-
-
-export function contextCall({ context }, { key, method, params }) {
-	context[key][method](params);
 }

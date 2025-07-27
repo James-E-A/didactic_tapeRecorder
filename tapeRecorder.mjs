@@ -1,6 +1,6 @@
 import { assign, createMachine, setup } from 'xstate';
 
-import { byId, contextCall, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream, wakeLock } from './xstate_helpers.mjs';
+import { byId, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream, wakeLock } from './xstate_helpers.mjs';
 
 export default setup({
 	actors: {
@@ -27,8 +27,8 @@ export default setup({
 						recorderOptions: ({ event }) => ({
 							query: { audio: true, video: false },
 							options: {
-								startImmediately: event.input.startImmediately ?? true,
 								mimeType: event.input.mimeType,
+								startImmediately: event.input.startImmediately ?? true,
 							},
 						}),
 
