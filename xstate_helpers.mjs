@@ -1,6 +1,7 @@
 import { assign, fromCallback, fromPromise } from 'xstate';
 
-import MediaRecorderStream from './MediaRecorderStream.mjs';
+import MediaRecorderStream from './mediaRecorderStream.mjs';
+import WakeLockEx from './wakeLockEx.mjs';
 
 
 var Promise_try = Promise.try?.bind(Promise) ?? function try_(func, ...arg) {
@@ -32,9 +33,8 @@ export var onBeforeUnloadLock = resourceActor({
 		return controller;
 	},
 
-	release: (controller) => {
-		controller.abort(null);
-	},
+	release: (controller) =>
+		void controller.abort(null),
 });
 
 
@@ -61,7 +61,7 @@ export var saveFileStream = resourceActor({
 			console.log("disposed before writable was closed: %o", writable);
 		} else {
 			console.warning("disposed while writable was locked: %o", writable);
-			await new Promise((resolve) => {setTimeout(resolve, 1000);});
+			await new Promise((resolve) => void setTimeout(resolve, 1000));
 			writable.abort("actor disposed");
 		}
 	}
@@ -69,11 +69,22 @@ export var saveFileStream = resourceActor({
 
 
 export var mediaRecorderStream = resourceActor({
-	acquire: ({ query, options }) =>
-		MediaRecorderStream.new(query, options),
+	acquire: async ({ query, options }) =>
+		await MediaRecorderStream.new(query, options),
 
-	release: (recorder) =>
-		recorder.stop()
+	release: (recorder) => {
+		if (recorder.state !== 'inactive')
+			recorder.stop();
+	}
+});
+
+
+export var wakeLock = resourceActor({
+	acquire: async (options, earlyAbortSignal) =>
+		await WakeLockEx.acquire(options, earlyAbortSignal),
+
+	release: (lock) =>
+		lock.release(),
 });
 
 

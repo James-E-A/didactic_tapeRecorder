@@ -58,6 +58,10 @@ export default class MediaRecorderStream {
 		console.debug("STOP OK");
 	}
 
+	get state() {
+		return this.#mediaRecorder.state;
+	}
+
 	async pipeTo(target, options) {
 		await this.#readableStream.pipeTo(target, options);
 	}

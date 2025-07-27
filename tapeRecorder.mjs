@@ -1,17 +1,16 @@
 import { assign, createMachine, setup } from 'xstate';
 
-import { byId, contextCall, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream } from './xstate_helpers.mjs';
+import { byId, contextCall, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream, wakeLock } from './xstate_helpers.mjs';
 
 export default setup({
-	actions: {
-		contextCall,
-	},
 	actors: {
 		onBeforeUnloadLock,
 		mediaRecorderStream,
 		pipeTo,
 		saveFileStream,
+		wakeLock,
 	},
+
 	guards: {
 		byId,
 	},
@@ -24,8 +23,11 @@ export default setup({
 				action_record: {
 					actions: assign({
 						recorderOptions: ({ event }) => ({
-							mimeType: event.input.mimeType,
-							startImmediately: true,
+							query: { audio: true, video: false },
+							options: {
+								startImmediately: event.input.startImmediately ?? true,
+								mimeType: event.input.mimeType,
+							},
 						}),
 						fileOptions: ({ event }) => ({
 							suggestedName: event.input.suggestedName,
@@ -35,6 +37,7 @@ export default setup({
 				},
 			},
 		},
+
 		recording: {
 			on: {
 				error: { // asynchronous error in invoked actor
@@ -42,6 +45,7 @@ export default setup({
 					target: ".error",
 				},
 			},
+
 			invoke: [
 				{
 					id: "mic",
@@ -68,12 +72,27 @@ export default setup({
 
 				{
 					src: "onBeforeUnloadLock",
+					onError: { // synchronous error in invoked actor
+						actions: "console_error",
+						target: ".error",
+					},
+				},
+
+				{
+					src: "wakeLock",
+					onError: { // synchronous error in invoked actor
+						actions: "console_error",
+						target: ".error",
+					},
 				},
 			],
+
 			initial: "acquiring",
+
 			states: {
 				acquiring: {
 					type: "parallel",
+
 					states: {
 						mic: {
 							initial: "acquiring",
@@ -117,60 +136,61 @@ export default setup({
 							},
 						},
 					},
+
 					onDone: "recording",
 				},
+
 				recording: {
 					initial: "recording",
-					invoke: [
-						{
-							id: "saving",
-							src: "pipeTo",
-							input: ({ context }) => ({
-								source: context.mic,
-								target: context.file
-							}),
-							onDone: "done",
-							onError: { // synchronous error in invoked actor
-								actions: "console_error",
-								target: "error",
-							},
+
+					invoke: {
+						id: "saving",
+						src: "pipeTo",
+						input: ({ context }) => ({
+							source: context.mic,
+							target: context.file
+						}),
+						onDone: "done",
+						onError: { // synchronous error in invoked actor
+							actions: "console_error",
+							target: "error",
 						},
-					],
+					},
+
+					entry: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
+
 					on: {
-						action_stop: ".stopping",
+						action_stop: {
+							actions: ({ context }) => {context.mic.stop();},
+							target: ".stopping",
+						},
 					},
 					states: {
 						recording: {
 							on: {
-								action_pause: "paused",
+								action_pause: {
+									actions: ({ context }) => {context.mic.pause();},
+									target: "paused",
+								},
 							},
 						},
 						paused: {
-							entry: {
-								type: "contextCall",
-								params: { key: "mic", method: "pause" },
-							},
 							on: {
 								action_resume: {
-									actions: {
-										type: "contextCall",
-										params: { key: "mic", method: "resume" },
-									},
+									actions: ({ context }) => {context.mic.resume();},
 									target: "recording",
 								},
 							},
 						},
-						stopping: {
-							entry: {
-								type: "contextCall",
-								params: { key: "mic", method: "stop" },
-							},
-						},
+						stopping: {},
 					},
 				},
+
+				// the illusion of choice...
 				done: { type: "final" },
 				error: { type: "final" },
 			},
+
 			onDone: "#TapeRecorder.inactive", // FIXME: why doesn't this work when written as "..inactive"?
 		},
 	},
