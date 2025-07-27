@@ -149,6 +149,10 @@ export default setup({
 
 						{
 							src: "onBeforeUnloadLock",
+							input: ({ context }) => () => {
+								// at least try to flush the recording so far to disk...
+								context.mic._mediaRecorder.requestData();
+							},
 							onError: {
 								description: "synchronous error in invoked actor",
 								actions: "console_error",

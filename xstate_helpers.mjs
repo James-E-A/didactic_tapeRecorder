@@ -25,8 +25,14 @@ export var onBeforeUnloadLock = resourceActor({
 		window.addEventListener(
 			'beforeunload',
 			(event) => {
-				if (onbeforeunload === undefined || onbeforeunload(event) !== false)
-					event.preventDefault();
+				var shouldSuppress = true;
+				try {
+					if (onbeforeunload !== undefined && onbeforeunload(event) === false)
+						shouldSuppress = false;
+				} finally {
+					if (shouldSuppress)
+						event.preventDefault();
+				}
 			},
 			{ signal: controller.signal }
 		);
