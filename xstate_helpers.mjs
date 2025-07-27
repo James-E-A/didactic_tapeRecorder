@@ -109,13 +109,14 @@ export function resourceActor({ acquire, release }) {
 		resource_.then(
 			(resource) => void sendBack({
 				type: "ready",
-				id: self.id,
+				_senderId: self.id,
 				output: resource,
 			}),
 			(error) => {
 				cancelController.abort(error);
 				sendBack({
 					type: "error",
+					_senderId: self.id,
 					error,
 				});
 			}
@@ -131,5 +132,5 @@ export function resourceActor({ acquire, release }) {
 
 export function byId({ event }, id) {
 	// WORKAROUND: https://github.com/statelyai/xstate/issues/5335
-	return event.id === id;
+	return event._senderId === id;
 }
