@@ -27,14 +27,14 @@ export default setup({
 						recorderOptions: ({ event }) => ({
 							query: { audio: true, video: false },
 							options: {
-								mimeType: event.input.mimeType,
-								startImmediately: event.input.startImmediately ?? true,
-								timeslice: event.input.timeslice ?? undefined,
+								mimeType: event.input?.mimeType,
+								startImmediately: event.input?.startImmediately ?? true,
+								timeslice: event.input?.timeslice,
 							},
 						}),
 
 						fileOptions: ({ event }) => ({
-							suggestedName: event.input.suggestedName,
+							suggestedName: event.input?.suggestedName,
 						}),
 					}),
 					target: "recording",
