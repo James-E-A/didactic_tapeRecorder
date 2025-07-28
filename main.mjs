@@ -19,12 +19,12 @@ var actor = window.temp0 = createActor(tapeRecorder);
 
 	let resume = document.createElement('button');
 	resume.textContent = resume.value = 'resume';
-	resume.dataset.allowedInStates = "recording.paused";
+	resume.dataset.allowedInStates = "recording.recording.paused";
 	controls.appendChild(resume);
 
 	let pause = document.createElement('button');
 	pause.textContent = pause.value = 'pause';
-	pause.dataset.allowedInStates = "recording.recording";
+	pause.dataset.allowedInStates = "recording.recording.recording";
 	controls.appendChild(pause);
 
 	let stop = document.createElement('button');
@@ -54,12 +54,12 @@ var actor = window.temp0 = createActor(tapeRecorder);
 			JSON.stringify(snapshot.value),
 			JSON.stringify(getNextEvents(snapshot))
 		);
-		//for (let e of form.elements) {
-		//	e.disabled = !arrayIntersects(
-		//		[snapshot.value, "_any"],
-		//		e.dataset.allowedInStates?.split(" ") ?? ["_any"]
-		//	);
-		//}
+		for (let e of form.elements) {
+			e.disabled = !arrayIntersects(
+				matchingStates(snapshot.value).concat(["_any"]),
+				e.dataset.allowedInStates?.split(" ") ?? ["_any"]
+			);
+		}
 	});
 
 	actor.start();
@@ -72,6 +72,27 @@ var actor = window.temp0 = createActor(tapeRecorder);
 			type: `action_${action}`,
 			input,
 		});
+	}
+}
+
+
+function matchingStates(value) {
+	return Array.from(_matchingStates(value, []));
+}
+
+
+function* _matchingStates(value, prefix) {
+	if (prefix.length > 0)
+		yield prefix.join(".");
+
+	if (typeof value === "string") {
+		yield prefix.concat([value]).join(".");
+	} else if (value instanceof Object) {
+		for (let [key, value_] of Object.entries(value)) {
+			yield* _matchingStates(value_, prefix.concat([key]));
+		}
+	} else {
+		throw new TypeError("each node must be a string or an object");
 	}
 }
 
