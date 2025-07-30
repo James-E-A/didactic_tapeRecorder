@@ -53,9 +53,9 @@ export default setup({
 
 			invoke: [
 				{
-					id: "mic",
-					src: "mediaRecorderStream",
-					input: ({ context }) => context.recorderOptions,
+					id: "file",
+					src: "saveFileStream",
+					input: ({ context }) => context.fileOptions,
 					onError: {
 						description: "synchronous error in invoked actor",
 						actions: "console_error",
@@ -64,9 +64,9 @@ export default setup({
 				},
 
 				{
-					id: "file",
-					src: "saveFileStream",
-					input: ({ context }) => context.fileOptions,
+					id: "mic",
+					src: "mediaRecorderStream",
+					input: ({ context }) => context.recorderOptions,
 					onError: {
 						description: "synchronous error in invoked actor",
 						actions: "console_error",
