@@ -2,5 +2,8 @@
   "dependencies": {
     "vite": "^7.0.6",
     "xstate": "^5.20.1"
+  },
+  "scripts": {
+    "dev": "vite dev"
   }
 }

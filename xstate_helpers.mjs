@@ -1,5 +1,6 @@
 import { assign, fromCallback, fromPromise } from 'xstate';
 
+import showSaveFilePicker from './lib/vendor/showSaveFilePicker.mjs?helperURL=https%3A%2F%2Fjames-e-a.github.io%2FshowSaveFilePicker_polyfill%2Fhelper.html';
 import MediaRecorderStream from './mediaRecorderStream.mjs';
 import WakeLockEx from './wakeLockEx.mjs';
 
@@ -46,7 +47,7 @@ export var onBeforeUnloadLock = resourceActor({
 
 export var saveFileStream = resourceActor({
 	acquire: async (options, cancelSignal) => {
-		let handle = await window.showSaveFilePicker(options);
+		let handle = await showSaveFilePicker(options);
 		cancelSignal.throwIfAborted();
 
 		let writable = await handle.createWritable();
