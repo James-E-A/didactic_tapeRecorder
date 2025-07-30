@@ -14,56 +14,71 @@ var actor = window.temp0 = createActor(tapeRecorder);
 	form.appendChild(controls);
 
 	let record = document.createElement('button');
+	record.name = 'action';
 	record.textContent = record.value = 'record';
-	record.dataset.allowedInStates = "inactive";
 	controls.appendChild(record);
 
 	let resume = document.createElement('button');
+	resume.name = 'action';
 	resume.textContent = resume.value = 'resume';
-	resume.dataset.allowedInStates = "recording.recording.paused";
 	controls.appendChild(resume);
 
 	let pause = document.createElement('button');
+	pause.name = 'action';
 	pause.textContent = pause.value = 'pause';
-	pause.dataset.allowedInStates = "recording.recording.recording";
 	controls.appendChild(pause);
 
 	let stop = document.createElement('button');
+	stop.name = 'action';
 	stop.textContent = stop.value = 'stop';
-	stop.dataset.allowedInStates = "recording";
 	controls.appendChild(stop);
 
 	let mimeType = document.createElement('select');
 	mimeType.hidden = true;
 	mimeType.name = 'mimeType';
 	mimeType.add(new Option('audio/webm;codecs=opus'));
-	mimeType.dataset.allowedInStates = "inactive";
 	form.appendChild(mimeType);
 
 	let suggestedName = document.createElement('input');
 	suggestedName.type = 'hidden';
 	suggestedName.name = 'suggestedName';
 	suggestedName.value = 'out.weba';
+	suggestedName.dataset.allowedInStates = "inactive";
 	form.addEventListener('submit', (event) => {
 		suggestedName.value = `recording_${filenameSafeTimestamp()}.weba`;
 	});
 	form.appendChild(suggestedName);
 
 	document.body.appendChild(form);
+
 	record.focus();
 
 	actor.subscribe((snapshot) => {
+		let nextEvents = getNextEvents(snapshot);
+		let matchingStates_ = matchingStates(snapshot.value);
+
 		console.debug(
 			"%s: %s",
 			JSON.stringify(snapshot.value),
 			JSON.stringify(getNextEvents(snapshot))
 		);
+
 		for (let e of form.elements) {
-			e.disabled = !arrayIntersects(
-				matchingStates(snapshot.value).concat(["_any"]),
-				e.dataset.allowedInStates?.split(" ") ?? ["_any"]
+			e.disabled = !(
+				arrayIntersects(
+					matchingStates_.concat(["_any"]),
+					e.dataset.allowedInStates?.split(" ") || []
+				)
+				|| (
+					e.name === 'action'
+					&& nextEvents.includes(`action_${e.value}`)
+				)
 			);
 		}
+
+		// FIXME: focus pause on the initial acquiring -> recording transition
+		// FIXME: focus resume on the recording.recording.recording -> recording.recording.paused transition
+		// FIXME: focus pause on the recording.recording.paused -> recording.recording.recording transition
 	});
 
 	actor.start();
