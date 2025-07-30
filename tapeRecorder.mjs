@@ -81,6 +81,13 @@ export default setup({
 				acquiring: {
 					type: "parallel",
 
+					on: {
+						action_stop: {
+							actions: () => {console.warn("early stop");},
+							target: "#TapeRecorder.inactive",
+						},
+					},
+
 					states: {
 						mic: {
 							initial: "acquiring",
