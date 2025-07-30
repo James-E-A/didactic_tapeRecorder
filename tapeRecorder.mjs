@@ -28,7 +28,7 @@ export default setup({
 							query: { audio: true, video: false },
 							options: {
 								mimeType: event.input?.mimeType,
-								startImmediately: event.input?.startImmediately ?? true,
+								startImmediately: true,
 								timeslice: event.input?.timeslice,
 							},
 						}),
