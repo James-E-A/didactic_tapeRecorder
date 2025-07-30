@@ -1,6 +1,6 @@
 import { assign, createMachine, setup } from 'xstate';
 
-import { byId, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream, wakeLock } from './xstate_helpers.mjs';
+import { byId, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream, wakeLock } from './lib/xstate_helpers.mjs';
 
 export default setup({
 	actors: {

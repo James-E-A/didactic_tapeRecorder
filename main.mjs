@@ -1,7 +1,7 @@
 import { createActor } from 'xstate';
 
-import { getNextEvents } from './xstate_helpers.mjs'
 import tapeRecorder from './tapeRecorder.mjs';
+import { getNextEvents } from './lib/xstate_helpers.mjs'
 
 var actor = window.temp0 = createActor(tapeRecorder);
 
