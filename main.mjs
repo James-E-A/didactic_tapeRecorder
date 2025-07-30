@@ -1,6 +1,7 @@
 import { createActor } from 'xstate';
 
 import tapeRecorder from './tapeRecorder.mjs';
+import { filenameSafeTimestamp } from './lib/helpers.mjs';
 import { getNextEvents } from './lib/xstate_helpers.mjs'
 
 var actor = window.temp0 = createActor(tapeRecorder);
@@ -43,6 +44,9 @@ var actor = window.temp0 = createActor(tapeRecorder);
 	suggestedName.type = 'hidden';
 	suggestedName.name = 'suggestedName';
 	suggestedName.value = 'out.weba';
+	form.addEventListener('submit', (event) => {
+		suggestedName.value = `recording_${filenameSafeTimestamp()}.weba`;
+	});
 	form.appendChild(suggestedName);
 
 	document.body.appendChild(form);
