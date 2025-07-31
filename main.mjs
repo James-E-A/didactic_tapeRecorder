@@ -37,6 +37,7 @@ var actor = window.temp0 = createActor(tapeRecorder);
 	mimeType.hidden = true;
 	mimeType.name = 'mimeType';
 	mimeType.add(new Option('audio/webm;codecs=opus'));
+	mimeType.dataset.allowedInStates = "inactive";
 	form.appendChild(mimeType);
 
 	let suggestedName = document.createElement('input');
