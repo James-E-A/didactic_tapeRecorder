@@ -102,6 +102,10 @@ export default setup({
 		recording: {
 			on: {
 				error: ".error",
+				action_stop: {
+					actions: () => {console.warn("early stop");},
+					target: ".done",
+				},
 			},
 
 			invoke: [
@@ -123,13 +127,6 @@ export default setup({
 			states: {
 				acquiring: {
 					type: "parallel",
-
-					on: {
-						action_stop: {
-							actions: () => {console.warn("early stop");},
-							target: "done",
-						},
-					},
 
 					states: {
 						mic: {
@@ -175,10 +172,7 @@ export default setup({
 						},
 					},
 
-					onDone: {
-						actions: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
-						target: "recording",
-					},
+					onDone: "recording",
 				},
 
 				recording: {
@@ -201,7 +195,7 @@ export default setup({
 							input: ({ context }) => () => {
 								// at least try to flush the recording so far to disk...
 								try {
-									context.mic._mediaRecorder?.requestData();
+									context.mic._mediaRecorder.requestData();
 								} catch (error) {
 									console.warn(error);
 								}
@@ -213,39 +207,41 @@ export default setup({
 						},
 					],
 
-					on: {
-						action_stop: {
-							actions: ({ context }) => {context.mic.stop();},
-							target: ".stopping",
-						},
-					},
 					states: {
 						recording: {
-							on: {
-								action_pause: {
-									actions: ({ context }) => {context.mic.pause();},
-									target: "paused",
-								},
-							},
-						},
+							entry: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
 
-						paused: {
-							on: {
-								action_resume: {
-									actions: ({ context }) => {context.mic.resume();},
-									target: "recording",
-								},
-							},
-						},
-
-						stopping: {
 							on: {
 								action_stop: {
-									actions: () => {console.warn("early stop");}
-									target: "#TapeRecorder.recording.done", // FIXME: why doesn't this work when written as "..done"?
+									actions: ({ context }) => {context.mic.stop();},
+									target: "stopping",
+								},
+							},
+
+							initial: "recording",
+
+							states: {
+								recording: {
+									on: {
+										action_pause: {
+											actions: ({ context }) => {context.mic.pause();},
+											target: "paused",
+										},
+									},
+								},
+
+								paused: {
+									on: {
+										action_resume: {
+											actions: ({ context }) => {context.mic.resume();},
+											target: "recording",
+										},
+									},
 								},
 							},
 						},
+
+						stopping: {},
 					},
 				},
 
