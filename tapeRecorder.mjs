@@ -1,14 +1,71 @@
-import { assign, createMachine, setup } from 'xstate';
+import { assign, createMachine, fromPromise, setup } from 'xstate';
 
-import { byId, onBeforeUnloadLock, mediaRecorderStream, pipeTo, saveFileStream, wakeLock } from './lib/xstate_helpers.mjs';
+import MediaRecorderStream from './lib/mediaRecorderStream.mjs';
+import WakeLockEx from './lib/wakeLockEx.mjs';
+import { showSaveFilePicker } from './lib/vendor/showSaveFilePicker.mjs?helperURL=https%3A%2F%2Fjames-e-a.github.io%2FshowSaveFilePicker_polyfill%2Fhelper.html';
+import { byId, resourceActor } from './lib/xstate_helpers.mjs';
 
 export default setup({
 	actors: {
-		mediaRecorderStream,
-		onBeforeUnloadLock,
-		pipeTo,
-		saveFileStream,
-		wakeLock,
+		mediaRecorderStream: resourceActor({
+			acquire: ({ query, options }) => MediaRecorderStream.new(query, options),
+			release: (recorder) => recorder.stop(),
+		}),
+		onBeforeUnloadLock: resourceActor({
+			acquire: (callback) => {
+				var controller = new AbortController();
+				window.addEventListener(
+					'onbeforeunload',
+					(event) => {
+						var shouldSuppress = true;
+						try {
+							if (callback !== undefined)
+								shouldSuppress = (callback(event) !== false);
+						} finally {
+							if (shouldSuppress)
+								event.preventDefault();
+						}
+					},
+					{ signal: controller.signal }
+				);
+				return controller;
+			},
+			release: (controller) => controller.abort(null),
+		}),
+		pipeTo: fromPromise(
+			({ input: { source, target, options }, signal }) =>
+				// FIXME: consider using AbortSignal.any() to combine the xstate disposal signal and any specific signal in options
+				source.pipeTo(target, options)
+		),
+		saveFileStream: resourceActor({
+			acquire: async (options, signal) => {
+				let handle = await showSaveFilePicker(options);
+				signal.throwIfAborted();
+				return await handle.createWritable();
+			},
+			release: async (writable) => {
+				if (!writable.locked) {
+					try {
+						await writable.close();
+					} catch (error) {
+						if (error instanceof TypeError)
+							return; // happy path
+						else
+							throw error;
+					}
+				} else {
+					console.warn("actor disposed while writable still locked: %o", writable);
+					await new Promise((resolve) => void setTimeout(resolve, 1000));
+					writable.abort("actor disposed");
+				}
+			},
+		}),
+		wakeLock: resourceActor({
+			acquire: (options, signal) =>
+				// FIXME: consider using AbortSignal.any() to combine the xstate disposal signal and any specific signal in options
+				WakeLockEx.acquire(options),
+			release: (lock) => lock.release(),
+		}),
 	},
 
 	guards: {
