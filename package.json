@@ -4,6 +4,6 @@
     "xstate": "^5.20.1"
   },
   "scripts": {
-    "dev": "vite dev"
+    "dev": "vite dev --base /didactic_tapeRecorder"
   }
 }
