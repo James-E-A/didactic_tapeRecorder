@@ -144,7 +144,7 @@ export default setup({
 							input: ({ context }) => () => {
 								// at least try to flush the recording so far to disk...
 								try {
-									context.mic._mediaRecorder.requestData();
+									context.mic._mediaRecorder?.requestData();
 								} catch (error) {
 									console.warn(error);
 								}
