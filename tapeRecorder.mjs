@@ -127,7 +127,7 @@ export default setup({
 					on: {
 						action_stop: {
 							actions: () => {console.warn("early stop");},
-							target: "#TapeRecorder.inactive",
+							target: "done",
 						},
 					},
 
@@ -228,6 +228,7 @@ export default setup({
 								},
 							},
 						},
+
 						paused: {
 							on: {
 								action_resume: {
@@ -236,7 +237,15 @@ export default setup({
 								},
 							},
 						},
-						stopping: {},
+
+						stopping: {
+							on: {
+								action_stop: {
+									actions: () => {console.warn("early stop");}
+									target: "#TapeRecorder.recording.done", // FIXME: why doesn't this work when written as "..done"?
+								},
+							},
+						},
 					},
 				},
 
