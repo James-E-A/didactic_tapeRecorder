@@ -44,11 +44,7 @@ export default setup({
 
 		recording: {
 			on: {
-				error: {
-					description: "asynchronous error in invoked actor",
-					actions: "console_error",
-					target: ".error",
-				},
+				error: ".error",
 			},
 
 			invoke: [
@@ -56,22 +52,12 @@ export default setup({
 					id: "file",
 					src: "saveFileStream",
 					input: ({ context }) => context.fileOptions,
-					onError: {
-						description: "synchronous error in invoked actor",
-						actions: "console_error",
-						target: ".error",
-					},
 				},
 
 				{
 					id: "mic",
 					src: "mediaRecorderStream",
 					input: ({ context }) => context.recorderOptions,
-					onError: {
-						description: "synchronous error in invoked actor",
-						actions: "console_error",
-						target: ".error",
-					},
 				},
 			],
 
@@ -132,7 +118,10 @@ export default setup({
 						},
 					},
 
-					onDone: "recording",
+					onDone: {
+						actions: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
+						target: "recording",
+					},
 				},
 
 				recording: {
@@ -147,37 +136,25 @@ export default setup({
 								target: context.file
 							}),
 							onDone: "done",
-							onError: {
-								description: "synchronous error in invoked actor",
-								actions: "console_error",
-								target: "error",
-							},
+							onError: "error",
 						},
 
 						{
 							src: "onBeforeUnloadLock",
 							input: ({ context }) => () => {
 								// at least try to flush the recording so far to disk...
-								context.mic._mediaRecorder.requestData();
-							},
-							onError: {
-								description: "synchronous error in invoked actor",
-								actions: "console_error",
-								target: "error",
+								try {
+									context.mic._mediaRecorder.requestData();
+								} catch (error) {
+									console.warn(error);
+								}
 							},
 						},
 
 						{
 							src: "wakeLock",
-							onError: {
-								description: "synchronous error in invoked actor",
-								actions: "console_error",
-								target: "error",
-							},
 						},
 					],
-
-					entry: ({ context }) => {if (context.mic.state === 'inactive') context.mic.start();},
 
 					on: {
 						action_stop: {
@@ -206,9 +183,12 @@ export default setup({
 					},
 				},
 
-				// the illusion of choice...
+				error: {
+					entry: "console_error",
+					always: "done",
+				},
+
 				done: { type: "final" },
-				error: { type: "final" },
 			},
 
 			onDone: "inactive",
